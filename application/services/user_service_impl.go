@@ -22,6 +22,15 @@ func NewUserServiceImpl(repo repositories.UserRepository) *UserServiceImpl {
 	}
 }
 
+func (u *UserServiceImpl) ResetPassword(email, password string) error {
+	agg := aggregates.NewUserAggregate()
+	newPassword, err := agg.HashPassword(password)
+	if err != nil {
+		return err
+	}
+	return u.repo.ResetPassword(email, newPassword)
+}
+
 // Create creates a new user
 func (u *UserServiceImpl) Create(name, surname, email, phone, password, id, provider, picture string, verifiedEmail bool) (entities.User, error) {
 	agg := aggregates.NewUserAggregate()

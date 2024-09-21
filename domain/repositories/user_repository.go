@@ -9,4 +9,5 @@ type UserRepository interface {
 	Lock(code string) error
 	UnLock(email string) error
 	FindByEmail(email string) (user entities.User, err error)
+	ResetPassword(email, password string) error
 }
