@@ -1,6 +1,10 @@
 package valueobjects
 
-import "errors"
+import (
+	"errors"
+	"strings"
+	"unicode"
+)
 
 var (
 	ErrFieldEmpty = errors.New("field is empty")
@@ -25,4 +29,15 @@ func ValidName(value string) error {
 		return err
 	}
 	return nil
+}
+
+// Alternative using a custom function to ensure correct behavior
+func NameToTitleCase(input string) string {
+	words := strings.Fields(input)
+	for i, word := range words {
+		if len(word) > 0 {
+			words[i] = string(unicode.ToUpper(rune(word[0]))) + strings.ToLower(word[1:])
+		}
+	}
+	return strings.Join(words, " ")
 }

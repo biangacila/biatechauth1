@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/biangacila/biatechauth1/constants"
 	"github.com/biangacila/biatechauth1/internal/utils"
+	"github.com/biangacila/biatechauth1/store"
 	"github.com/biangacila/luvungula-go/global"
 	"github.com/pborman/uuid"
 	"golang.org/x/oauth2"
@@ -17,10 +17,11 @@ import (
 	"strings"
 )
 
+var clientId, clientSecret, _ = utils.GetGoogleClientLoginWith()
 var googleOauthConfig = &oauth2.Config{
-	RedirectURL:  constants.GOOGLE_CALLBACK_URL2,
-	ClientID:     constants.GOOGLE_CLIENT_ID,
-	ClientSecret: constants.GOOGLE_CLIENT_SECRET,
+	RedirectURL:  utils.GoogleAuthCallbackUri(),
+	ClientID:     clientId,
+	ClientSecret: clientSecret,
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
 	Endpoint:     google.Endpoint,
 }
@@ -49,7 +50,7 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 		Value: hostRedirectUri,
 		Path:  hostRedirectUri,
 	})
-	redirectUri := constants.GOOGLE_CALLBACK_URL2
+	redirectUri := utils.GoogleAuthCallbackUri()
 	if strings.Contains(host, "localhost") {
 		redirectUri = fmt.Sprintf("http://%v/backend-biatechdesk/api/auth/google/callback", host)
 	} else if utils.ContainsIPAddress(host) {
@@ -114,7 +115,10 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store with our location token register
-	userCode := registerTokenWithLocalStore(token.AccessToken, userInfo)
+	if err = store.GetStore().AddToken(code, token.AccessToken, "google", token.Expiry); err != nil {
+		utils.NewLoggerSlog().Error(err.Error())
+	}
+
 	// Retrieve the session ID from the cookie
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -126,7 +130,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	cookieUri, _ := r.Cookie("session_uri")
 	sessionUri := cookieUri.Value
 
-	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, token.AccessToken, sessionID, userCode)
+	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, token.AccessToken, sessionID, "any")
 	http.Redirect(w, r, uriRed, http.StatusFound)
 	return
 }

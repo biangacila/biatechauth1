@@ -23,6 +23,10 @@ type XlsxHeader struct {
 	DateFormatOut string
 }
 
+func GetExpiredAt(hour int64) time.Time {
+	expiresAt := time.Now().Add(time.Hour * time.Duration(hour)).Unix()
+	return time.Unix(expiresAt, 0)
+}
 func ExtractQueryParams(r *http.Request) (map[string]interface{}, error) {
 	// Create a map to store the query parameters
 	queryParams := make(map[string]interface{})
@@ -68,7 +72,14 @@ func GenerateCodeBasedOnCurrentDateTime(prefix string) string {
 	return strings.ReplaceAll(prefix+time.Now().Format("20060102150405.000"), ".", "")
 }
 func HttpResponseError(err error) string {
-	return err.Error()
+	var maps = map[string]interface{}{
+		"error": err.Error(),
+	}
+	return MapToString(maps)
+}
+func MapToString(input map[string]interface{}) string {
+	b, _ := json.Marshal(input)
+	return string(b)
 }
 func FormatDateCsvBank1(input string) string {
 	// Extract the date part (ignoring the first 8 characters)

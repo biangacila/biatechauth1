@@ -11,4 +11,5 @@ type UserController interface {
 	Lock(w http.ResponseWriter, r *http.Request)
 	Unlock(w http.ResponseWriter, r *http.Request)
 	Exist(w http.ResponseWriter, r *http.Request)
+	ExistGet(w http.ResponseWriter, r *http.Request)
 }

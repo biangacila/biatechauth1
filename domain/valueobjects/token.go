@@ -23,7 +23,7 @@ func GenerateAllTokens(email, givenName, familyName, phone string) (signedToken,
 		return "", "", err
 	}
 
-	expiresAt := time.Now().Add(time.Hour * time.Duration(24)).Unix()
+	expiresAt := time.Now().Add(time.Hour * time.Duration(48)).Unix()
 	claims := SignedDetails{
 		Email:      email,
 		GivenName:  givenName,

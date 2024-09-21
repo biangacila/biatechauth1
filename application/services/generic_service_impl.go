@@ -10,7 +10,7 @@ type GenericServiceImpl[T any] struct {
 	dto  any
 }
 
-func NewGenericServiceImpl[T any](repo repositories.GenericRepository[T], t T) *GenericServiceImpl[T] {
+func NewGenericServiceImpl[T any](repo repositories.GenericRepository[T]) *GenericServiceImpl[T] {
 	return &GenericServiceImpl[T]{repo: repo}
 }
 func (g *GenericServiceImpl[T]) SetDto(dto any) {

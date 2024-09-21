@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"github.com/biangacila/biatechauth1/domain/valueobjects"
 	"time"
 )
 
@@ -15,10 +16,14 @@ type User struct {
 	Locale        string
 	Password      string
 	Status        string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+
+	Provider string // local, google, facebox
+	Id       string
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (u User) String() string {
-	return fmt.Sprintf("%v %v", u.GivenName, u.FamilyName)
+	return valueobjects.NameToTitleCase(fmt.Sprintf("%v %v", u.GivenName, u.FamilyName))
 }

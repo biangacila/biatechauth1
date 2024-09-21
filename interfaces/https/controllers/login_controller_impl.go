@@ -14,6 +14,40 @@ type LoginControllerImpl struct {
 	service services.LoginService
 }
 
+func (l LoginControllerImpl) IsValidToken(w http.ResponseWriter, r *http.Request) {
+	payload := dtos.LoginCheckTokenDto{}
+
+	// This will reject any fields that are not part of the DTO
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&payload)
+	if err != nil {
+		http.Error(w, utils.HttpResponseError(err), http.StatusBadRequest)
+		return
+	}
+	if err = dtos.Validate(payload, dtos.LoginDto{}); err != nil {
+		http.Error(w, utils.HttpResponseError(err), http.StatusBadRequest)
+		return
+	}
+
+	user, token, err := l.service.IsValueToken(payload.Token)
+	if err != nil {
+		http.Error(w, utils.HttpResponseError(err), http.StatusUnauthorized)
+		return
+	}
+
+	response := map[string]interface{}{
+		"token": token,
+		"user":  user,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
+
+}
+
 func NewLoginController(
 	service services.LoginService,
 ) *LoginControllerImpl {
@@ -45,9 +79,10 @@ func (l LoginControllerImpl) NewLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userOut := dtos.ToUserResponseDto(user)
 	response := map[string]interface{}{
 		"token": token,
-		"user":  user,
+		"user":  userOut,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
