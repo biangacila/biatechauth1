@@ -10,6 +10,7 @@ type storeToken struct {
 	Username  string
 	Token     string
 	ExpiredAt time.Time
+	Provider  string
 }
 
 type ServeStore struct {
@@ -31,13 +32,14 @@ func CloseTokens() {
 		stores.Tokens = make(map[string]storeToken)
 	}
 }
-func (c *ServeStore) AddToken(username, token string, expiredAt time.Time) error {
+func (c *ServeStore) AddToken(username, token, provider string, expiredAt time.Time) error {
 	c.Lock()
 	defer c.Unlock()
 	c.Tokens[token] = storeToken{
 		Username:  username,
 		Token:     token,
 		ExpiredAt: expiredAt,
+		Provider:  provider,
 	}
 	return nil
 }
@@ -71,8 +73,8 @@ func (c *ServeStore) IsValidToken(token string) error {
 	return nil
 }
 
-func NewToken(username, token string, expiredAt time.Time) error {
-	return stores.AddToken(username, token, expiredAt)
+func NewToken(username, token, provider string, expiredAt time.Time) error {
+	return stores.AddToken(username, token, provider, expiredAt)
 }
 func GetStore() *ServeStore {
 	if stores == nil {

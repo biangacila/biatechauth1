@@ -40,7 +40,8 @@ func (u *UserControllerImpl) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := u.service.Create(payload.GivenName, payload.FamilyName, payload.Email, payload.Phone, payload.Password)
+	user, err := u.service.Create(payload.GivenName, payload.FamilyName, payload.Email, payload.Phone, payload.Password,
+		payload.Id, "local", payload.Picture, payload.VerifiedEmail)
 	if err != nil {
 		http.Error(w, utils.HttpResponseError(err), http.StatusInternalServerError)
 		return

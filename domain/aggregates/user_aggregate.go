@@ -21,7 +21,8 @@ func NewUserAggregate() *UserAggregate {
 	return &UserAggregate{}
 }
 
-func (c *UserAggregate) NewUser(email, name, surname, phone, password string) (user entities.User, err error) {
+func (c *UserAggregate) NewUser(email, name, surname, phone, password, id, provider, picture string, verifiedEmail bool) (user entities.User, err error) {
+	newPassword := password
 	email = valueobjects.FormatEmail(email)
 	if _, err = valueobjects.NewName(name); err != nil {
 		return entities.User{}, ErrNameEmpty
@@ -35,29 +36,31 @@ func (c *UserAggregate) NewUser(email, name, surname, phone, password string) (u
 	if _, err = valueobjects.ValuePhoneNumber(phone); err != nil {
 		return entities.User{}, err
 	}
-	if err = valueobjects.ValidPasswordPolicy(password); err != nil {
-		return entities.User{}, err
-	}
-
-	password, err = valueobjects.NewPassword(password)
-	if err != nil {
-		return entities.User{}, err
-	}
-
-	newPassword, err := valueobjects.HashPassword(password)
-	if err != nil {
-		return entities.User{}, err
+	if provider == "local" {
+		if err = valueobjects.ValidPasswordPolicy(password); err != nil {
+			return entities.User{}, err
+		}
+		password, err = valueobjects.NewPassword(password)
+		if err != nil {
+			return entities.User{}, err
+		}
+		newPassword, err = valueobjects.HashPassword(password)
+		if err != nil {
+			return entities.User{}, err
+		}
 	}
 
 	user = entities.User{
 		Email:         email,
 		Phone:         phone,
-		VerifiedEmail: false,
+		VerifiedEmail: verifiedEmail,
 		GivenName:     name,
 		FamilyName:    surname,
-		Picture:       "",
+		Picture:       picture,
 		Locale:        "",
 		Password:      newPassword,
+		Id:            id,
+		Provider:      provider,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 		Status:        "active",

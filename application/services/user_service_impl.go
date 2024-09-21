@@ -23,16 +23,12 @@ func NewUserServiceImpl(repo repositories.UserRepository) *UserServiceImpl {
 }
 
 // Create creates a new user
-func (u *UserServiceImpl) Create(name, surname, email, phone, password string) (entities.User, error) {
+func (u *UserServiceImpl) Create(name, surname, email, phone, password, id, provider, picture string, verifiedEmail bool) (entities.User, error) {
 	agg := aggregates.NewUserAggregate()
-	user, err := agg.NewUser(email, name, surname, phone, password)
+	user, err := agg.NewUser(email, name, surname, phone, password, id, provider, picture, verifiedEmail)
 	if err != nil {
 		utils.NewLoggerSlog().Error(err.Error())
 		utils.NewLoggerSlog().Debug("Create user error", "problem", err.Error())
-		return entities.User{}, err
-	}
-	// let not allow duplication email address on the system, only one user with email
-	if _, err = u.repo.FindByEmail(email); err != nil {
 		return entities.User{}, err
 	}
 	// TODO please create login of this user to auth micro service

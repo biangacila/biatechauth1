@@ -23,6 +23,10 @@ type XlsxHeader struct {
 	DateFormatOut string
 }
 
+func GetExpiredAt(hour int64) time.Time {
+	expiresAt := time.Now().Add(time.Hour * time.Duration(hour)).Unix()
+	return time.Unix(expiresAt, 0)
+}
 func ExtractQueryParams(r *http.Request) (map[string]interface{}, error) {
 	// Create a map to store the query parameters
 	queryParams := make(map[string]interface{})

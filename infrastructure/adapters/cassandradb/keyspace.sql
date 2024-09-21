@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS auth1.Users (
     Locale        text,
     Password      text,
     Status        text,
+    Provider text,
+    Id text,
     CreatedAt TIMESTAMP,
     UpdatedAt TIMESTAMP,
     PRIMARY KEY(Email)

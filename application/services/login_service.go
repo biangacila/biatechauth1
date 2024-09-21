@@ -9,4 +9,5 @@ type LoginService interface {
 	NewLogin(username, password string) (entities.User, string, error)
 	HasLogin(username string) (time.Time, bool, error)
 	IsValueToken(token string) (time.Time, bool, error)
+	RegisterGoogleToken(token, username string) error
 }

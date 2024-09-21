@@ -6,18 +6,20 @@ import (
 )
 
 type Endpoint struct {
-	router            *mux.Router
-	userController    controllers.UserController
-	loginController   controllers.LoginController
-	genericController controllers.GenericController[any]
+	router                    *mux.Router
+	userController            controllers.UserController
+	loginController           controllers.LoginController
+	genericController         controllers.GenericController[any]
+	loginWithGoogleController controllers.AuthGoogleController
 }
 
 func NewEndpoint(router *mux.Router, serv *ControllerHandlers) *Endpoint {
 	return &Endpoint{
-		router:            router,
-		userController:    serv.userController,
-		loginController:   serv.loginController,
-		genericController: serv.genericController,
+		router:                    router,
+		userController:            serv.userController,
+		loginController:           serv.loginController,
+		genericController:         serv.genericController,
+		loginWithGoogleController: serv.loginGoogleController,
 	}
 }
 

@@ -7,6 +7,15 @@ import (
 	"strings"
 )
 
+func GoogleAuthCallbackUri() string {
+	if os.Getenv("GOOGLE_CALLBACK_URL") == "" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			return ""
+		}
+	}
+	return os.Getenv("GOOGLE_CALLBACK_URL")
+}
 func GetAllowedMethods() []string {
 	if os.Getenv("ALLOWED_METHODS") != "" {
 		return strings.Split(os.Getenv("ALLOWED_METHODS"), ",")

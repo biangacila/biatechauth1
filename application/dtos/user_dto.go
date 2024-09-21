@@ -6,11 +6,15 @@ import (
 )
 
 type UserPayloadDto struct {
-	Password   string `json:"password" validate:"required,min=3,max=130"`
-	GivenName  string `json:"given_name" validate:"required,min=3,max=130"`
-	FamilyName string `json:"family_name" validate:"required,min=3,max=130"`
-	Email      string `json:"email" validate:"required,email"`
-	Phone      string `json:"phone_number" validate:"required,number,min=9,max=11"`
+	Password      string `json:"password" validate:"required,min=3,max=130"`
+	GivenName     string `json:"given_name" validate:"required,min=3,max=130"`
+	FamilyName    string `json:"family_name" validate:"required,min=3,max=130"`
+	Email         string `json:"email" validate:"required,email"`
+	Phone         string `json:"phone_number" validate:"required,number,min=9,max=11"`
+	Id            string `json:"id"`
+	Provider      string `json:"provider"`
+	Picture       string `json:"picture"`
+	VerifiedEmail bool   `json:"verified_email"`
 }
 
 type UserPayloadLockDto struct {
@@ -28,6 +32,17 @@ type UserResponseDto struct {
 	Locale     string `json:"locale"`
 	Status     string `json:"status" `
 	Name       string `json:"name" `
+}
+
+type UserGoogleTokenResponseDto struct {
+	GivenName     string `json:"given_name" `
+	FamilyName    string `json:"family_name"`
+	Email         string `json:"email" `
+	Phone         string `json:"phone_number" `
+	Picture       string `json:"picture" `
+	Id            string `json:"id" `
+	Name          string `json:"name" `
+	VerifiedEmail bool   `json:"verified_email" `
 }
 
 // ToUserResponseDto Method to convert User to UserResponseDto

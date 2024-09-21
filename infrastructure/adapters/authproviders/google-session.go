@@ -2,7 +2,7 @@ package authproviders
 
 import (
 	"fmt"
-	"github.com/biangacila/biatechauth1/constants"
+	"github.com/biangacila/biatechauth1/internal/utils"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -18,7 +18,7 @@ const (
 func NewGoogleAuth() {
 	googleClientID := clientId                         // os.Getenv("GOOGLE_CLIENT_ID")
 	googleClientSecret := clientSecret                 // os.Getenv("GOOGLE_CLIENT_SECRET")
-	googleRedirectURL := constants.GOOGLE_CALLBACK_URL // os.Getenv("GOOGLE_CALLBACK_URL")
+	googleRedirectURL := utils.GoogleAuthCallbackUri() // os.Getenv("GOOGLE_CALLBACK_URL")
 
 	fmt.Println(googleClientID, googleClientSecret, googleRedirectURL)
 

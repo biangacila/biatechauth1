@@ -13,4 +13,7 @@ func (r *Endpoint) RegisterRoutes() {
 	router.HandleFunc(prefix+"/logins/valid-token", r.loginController.IsValidToken).Methods("POST")
 	router.HandleFunc(prefix+"/logins/valid-token/{token}", r.loginController.IsValidTokenGet).Methods("GET")
 
+	router.HandleFunc(prefix+"/logins-google/login", r.loginWithGoogleController.Login).Methods("GET")
+	router.HandleFunc(prefix+"/logins-google/callback", r.loginWithGoogleController.Callback).Methods("GET")
+
 }

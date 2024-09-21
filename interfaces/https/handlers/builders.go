@@ -20,9 +20,10 @@ type ControllerServices struct {
 }
 
 type ControllerHandlers struct {
-	userController    controllers.UserController
-	loginController   controllers.LoginController
-	genericController controllers.GenericController[any]
+	userController        controllers.UserController
+	loginController       controllers.LoginController
+	genericController     controllers.GenericController[any]
+	loginGoogleController controllers.AuthGoogleController
 }
 
 func NewControllerRepositoryWithCassandra() ControllerRepository {
@@ -85,6 +86,7 @@ func (b *Builders) Build() ControllerHandlers {
 	h.userController = controllers.NewUserController(b.services.User)
 	h.loginController = controllers.NewLoginController(b.services.Login)
 	h.genericController = controllers.NewGenericController(b.services.Generic)
+	h.loginGoogleController = controllers.NewAuthGoogleController(b.services.Login)
 
 	b.handlers = h
 	return b.handlers

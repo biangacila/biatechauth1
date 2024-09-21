@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/biangacila/biatechauth1/application/dtos"
 	"github.com/biangacila/biatechauth1/application/services"
-	"github.com/biangacila/biatechauth1/constants"
 	"github.com/biangacila/biatechauth1/internal/utils"
 	"github.com/biangacila/luvungula-go/global"
 	"github.com/google/uuid"
@@ -20,7 +19,7 @@ import (
 
 var clientId, clientSecret, _ = utils.GetGoogleClientLoginWith()
 var googleOauthConfig = &oauth2.Config{
-	RedirectURL:  constants.GOOGLE_CALLBACK_URL2,
+	RedirectURL:  utils.GoogleAuthCallbackUri(),
 	ClientID:     clientId,
 	ClientSecret: clientSecret,
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
@@ -33,18 +32,27 @@ type sessionData struct {
 	UserInfo *dtos.UserDto
 }
 
-type AuthGoogleControllerWith struct {
-	autService *services.AuthServiceImpl
+type AuthGoogleControllerImpl struct {
+	service services.LoginService
 }
 
-func NewAuthController() *AuthGoogleControllerWith {
-	return &AuthGoogleControllerWith{}
+func (c *AuthGoogleControllerImpl) ValidateToken(w http.ResponseWriter, r *http.Request) {
+	//TODO implement me
+	panic("implement me")
 }
-func (c *AuthGoogleControllerWith) LoginWithGoogle(w http.ResponseWriter, r *http.Request) {
+
+func NewAuthGoogleController(
+	service services.LoginService,
+) *AuthGoogleControllerImpl {
+	return &AuthGoogleControllerImpl{
+		service: service,
+	}
+}
+func (c *AuthGoogleControllerImpl) LoginWithGoogle(w http.ResponseWriter, r *http.Request) {
 	gothic.BeginAuthHandler(w, r)
 }
 
-func (c *AuthGoogleControllerWith) Login(w http.ResponseWriter, r *http.Request) {
+func (c *AuthGoogleControllerImpl) Login(w http.ResponseWriter, r *http.Request) {
 	host := r.Host
 	hostRedirectUri := r.URL.Query().Get("redirect_uri")
 	sessionId := r.URL.Query().Get("session_id") // todo get it from the client request
@@ -62,18 +70,19 @@ func (c *AuthGoogleControllerWith) Login(w http.ResponseWriter, r *http.Request)
 		Value: hostRedirectUri,
 		Path:  hostRedirectUri,
 	})
-	redirectUri := constants.GOOGLE_CALLBACK_URL2
+	redirectUri := utils.GoogleAuthCallbackUri()
 	if strings.Contains(host, "localhost") {
-		redirectUri = fmt.Sprintf("http://%v/backend-biatechdesk/api/auth/google/callback", host)
+		// TODO please uncomment
+		redirectUri = fmt.Sprintf("http://%v/backend-biatechauth1/api/logins-google/callback", host)
 	} else if utils.ContainsIPAddress(host) {
-		redirectUri = fmt.Sprintf("http://localhost:8080/backend-biatechdesk/api/auth/google/callback")
+		redirectUri = fmt.Sprintf("http://localhost:8080/backend-biatechauth1/api/logins-google/callback")
 	}
 	googleOauthConfig.RedirectURL = redirectUri
 	url := googleOauthConfig.AuthCodeURL("random_state")
 
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
-func (c *AuthGoogleControllerWith) Callback(w http.ResponseWriter, r *http.Request) {
+func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 
 	token, err := googleOauthConfig.Exchange(oauth2.NoContext, code)
@@ -102,15 +111,13 @@ func (c *AuthGoogleControllerWith) Callback(w http.ResponseWriter, r *http.Reque
 		sessionStore = make(map[string]*sessionData)
 	}
 
-	newSessionId, _ := generateSessionID()
-	err = c.autService.RegisterToken(newSessionId, token, "google", userInfo)
+	//newSessionId, _ := generateSessionID()
+	err = c.service.RegisterGoogleToken(token.AccessToken, utils.MapToString(userInfo))
 	if err != nil {
 		fmt.Println("!> error > ", err)
 		return
 	}
 
-	// Store with our location token register
-	userCode := c.autService.StoreTokenRealtime(token.AccessToken, userInfo)
 	// Retrieve the session ID from the cookie
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -122,45 +129,47 @@ func (c *AuthGoogleControllerWith) Callback(w http.ResponseWriter, r *http.Reque
 	cookieUri, _ := r.Cookie("session_uri")
 	sessionUri := cookieUri.Value
 
-	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, token.AccessToken, sessionID, userCode)
+	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
 	http.Redirect(w, r, uriRed, http.StatusFound)
 	return
 }
 
-func (c *AuthGoogleControllerWith) CallbackGothic(w http.ResponseWriter, r *http.Request) {
-	user, err := gothic.CompleteUserAuth(w, r)
-	if err != nil {
-		http.Error(w, "Failed to complete user authentication", http.StatusInternalServerError)
-		return
+/*
+	func (c *AuthGoogleControllerImpl) CallbackGothic(w http.ResponseWriter, r *http.Request) {
+		user, err := gothic.CompleteUserAuth(w, r)
+		if err != nil {
+			http.Error(w, "Failed to complete user authentication", http.StatusInternalServerError)
+			return
+		}
+
+		// Use the user info and token from Goth
+		fmt.Println("User: ", user)
+
+		// Store user info in session if needed
+		err = c.autService.RegisterToken(user.UserID, &oauth2.Token{
+			AccessToken: user.AccessToken,
+		}, "google", map[string]interface{}{
+			"name":  user.Name,
+			"email": user.Email,
+		})
+		if err != nil {
+			fmt.Println("!> error > ", err)
+			return
+		}
+
+		// Store with our location token register
+		userCode := c.service.RegisterGoogleToken(user., utils.ObjectToMap(user))
+
+		// Redirect or process the user data
+		cookie, err := r.Cookie("session_id")
+		sessionID := cookie.Value
+		cookieUri, _ := r.Cookie("session_uri")
+		sessionUri := cookieUri.Value
+		uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, user.AccessToken, sessionID, userCode)
+
+		http.Redirect(w, r, uriRed, http.StatusFound)
 	}
-
-	// Use the user info and token from Goth
-	fmt.Println("User: ", user)
-
-	// Store user info in session if needed
-	err = c.autService.RegisterToken(user.UserID, &oauth2.Token{
-		AccessToken: user.AccessToken,
-	}, "google", map[string]interface{}{
-		"name":  user.Name,
-		"email": user.Email,
-	})
-	if err != nil {
-		fmt.Println("!> error > ", err)
-		return
-	}
-
-	// Store with our location token register
-	userCode := c.autService.StoreTokenRealtime(user.AccessToken, utils.ObjectToMap(user))
-
-	// Redirect or process the user data
-	cookie, err := r.Cookie("session_id")
-	sessionID := cookie.Value
-	cookieUri, _ := r.Cookie("session_uri")
-	sessionUri := cookieUri.Value
-	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, user.AccessToken, sessionID, userCode)
-
-	http.Redirect(w, r, uriRed, http.StatusFound)
-}
+*/
 func generateSessionID() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {

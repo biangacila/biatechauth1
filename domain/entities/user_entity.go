@@ -16,8 +16,12 @@ type User struct {
 	Locale        string
 	Password      string
 	Status        string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+
+	Provider string // local, google, facebox
+	Id       string
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (u User) String() string {

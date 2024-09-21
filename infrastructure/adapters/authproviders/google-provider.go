@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/biangacila/biatechauth1/constants"
 	"github.com/biangacila/biatechauth1/internal/utils"
 	"github.com/biangacila/biatechauth1/store"
 	"github.com/biangacila/luvungula-go/global"
@@ -20,7 +19,7 @@ import (
 
 var clientId, clientSecret, _ = utils.GetGoogleClientLoginWith()
 var googleOauthConfig = &oauth2.Config{
-	RedirectURL:  constants.GOOGLE_CALLBACK_URL2,
+	RedirectURL:  utils.GoogleAuthCallbackUri(),
 	ClientID:     clientId,
 	ClientSecret: clientSecret,
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
@@ -51,7 +50,7 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 		Value: hostRedirectUri,
 		Path:  hostRedirectUri,
 	})
-	redirectUri := constants.GOOGLE_CALLBACK_URL2
+	redirectUri := utils.GoogleAuthCallbackUri()
 	if strings.Contains(host, "localhost") {
 		redirectUri = fmt.Sprintf("http://%v/backend-biatechdesk/api/auth/google/callback", host)
 	} else if utils.ContainsIPAddress(host) {
@@ -116,7 +115,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store with our location token register
-	if err = store.GetStore().AddToken(code, token.AccessToken, token.Expiry); err != nil {
+	if err = store.GetStore().AddToken(code, token.AccessToken, "google", token.Expiry); err != nil {
 		utils.NewLoggerSlog().Error(err.Error())
 	}
 
