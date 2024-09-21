@@ -68,7 +68,14 @@ func GenerateCodeBasedOnCurrentDateTime(prefix string) string {
 	return strings.ReplaceAll(prefix+time.Now().Format("20060102150405.000"), ".", "")
 }
 func HttpResponseError(err error) string {
-	return err.Error()
+	var maps = map[string]interface{}{
+		"error": err.Error(),
+	}
+	return MapToString(maps)
+}
+func MapToString(input map[string]interface{}) string {
+	b, _ := json.Marshal(input)
+	return string(b)
 }
 func FormatDateCsvBank1(input string) string {
 	// Extract the date part (ignoring the first 8 characters)

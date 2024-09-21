@@ -15,7 +15,7 @@ type UserServiceImpl struct {
 
 // NewUserServiceImpl creates a new instance of UserServiceImpl
 func NewUserServiceImpl(repo repositories.UserRepository) *UserServiceImpl {
-	var genericService = NewGenericServiceImpl(repo, entities.User{})
+	var genericService = NewGenericServiceImpl(repo)
 	return &UserServiceImpl{
 		GenericServiceImpl: *genericService, // Use a pointer receiver for GenericServiceImpl
 		repo:               repo,

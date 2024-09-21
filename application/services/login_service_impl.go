@@ -4,6 +4,8 @@ import (
 	"github.com/biangacila/biatechauth1/domain/aggregates"
 	"github.com/biangacila/biatechauth1/domain/entities"
 	"github.com/biangacila/biatechauth1/domain/repositories"
+	"github.com/biangacila/biatechauth1/internal/utils"
+	"github.com/biangacila/biatechauth1/store"
 	"time"
 )
 
@@ -14,7 +16,7 @@ type LoginServiceImpl struct {
 }
 
 func NewLoginServiceImpl(repo repositories.LoginRepository, repoUser repositories.UserRepository) *LoginServiceImpl {
-	var genericService = NewGenericServiceImpl(repo, entities.Login{})
+	var genericService = NewGenericServiceImpl(repo)
 	var userService = NewUserServiceImpl(repoUser)
 	return &LoginServiceImpl{
 		GenericServiceImpl: *genericService, // Use a pointer receiver for GenericServiceImpl
@@ -54,6 +56,12 @@ func (l LoginServiceImpl) NewLogin(username, password string) (user entities.Use
 	if _, err = l.repo.New(login); err != nil {
 		return entities.User{}, "", err
 	}
+
+	// Store with our location token register
+	if err = store.GetStore().AddToken(user.Email, token, expiredAt); err != nil {
+		utils.NewLoggerSlog().Error(err.Error())
+	}
+
 	return user, token, nil
 }
 func (l LoginServiceImpl) HasLogin(username string) (time.Time, bool, error) {
@@ -65,6 +73,10 @@ func (l LoginServiceImpl) HasLogin(username string) (time.Time, bool, error) {
 	return agg.GetTokenExpiryAndValidity(login.SignedToken)
 }
 func (l LoginServiceImpl) IsValueToken(token string) (time.Time, bool, error) {
+	// let check if this token is reject with us first
+	if err := store.GetStore().IsValidToken(token); err != nil {
+		return time.Time{}, false, err
+	}
 	agg := aggregates.NewLoginAggregate()
 	return agg.GetTokenExpiryAndValidity(token)
 }

@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/biangacila/biatechauth1/constants"
 	"github.com/biangacila/biatechauth1/infrastructure/adapters/authproviders"
+	"github.com/biangacila/biatechauth1/infrastructure/adapters/cassandradb"
 	routeHandlers "github.com/biangacila/biatechauth1/interfaces/https/handlers"
 	"github.com/biangacila/biatechauth1/internal/utils"
+	"github.com/biangacila/biatechauth1/store"
 	"github.com/gorilla/handlers"
 	"log"
 	"net/http"
@@ -39,11 +42,22 @@ func main() {
 	flag.StringVar(&cfg.Version, "version", "1.0", "API version")
 	flag.Parse()
 
+	// Initialize cassandra database
+	cassandradb.InitSession(constants.DbHost, constants.DbName)
+	defer cassandradb.CloseSession()
+
+	// Initialize stores
+	store.InitTokens()
+
+	// Initialize google authentication
 	go authproviders.NewGoogleAuth()
 
-	//session, _ := utils.CreateConnectionCass(cfg.DbName, cfg.DbHostServer)
-	r := routeHandlers.SetupServer()
+	// Initialize services and controllers
+	builder := routeHandlers.NewBuilders()
+	controllerHandlers := builder.Build()
+	r := routeHandlers.SetupServer(&controllerHandlers)
 
+	// System health controller
 	r.HandleFunc(cfg.Backend+"/status", func(w http.ResponseWriter, r *http.Request) {
 		currentStatus := AppStatus{
 			Status:      "Available",

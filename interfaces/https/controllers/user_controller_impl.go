@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/biangacila/biatechauth1/application/dtos"
 	"github.com/biangacila/biatechauth1/application/services"
 	"github.com/biangacila/biatechauth1/domain/entities"
 	"github.com/biangacila/biatechauth1/internal/utils"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -122,6 +124,32 @@ func (u *UserControllerImpl) Exist(w http.ResponseWriter, r *http.Request) {
 
 	response := map[string]interface{}{
 		"user": user,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusFound)
+	json.NewEncoder(w).Encode(response)
+}
+func (u *UserControllerImpl) ExistGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	username, _ := vars["username"]
+
+	if username == "" {
+		err := errors.New("username is required")
+		http.Error(w, utils.HttpResponseError(err), http.StatusBadRequest)
+		return
+	}
+
+	user, err := u.service.UserExists(username)
+	if err != nil {
+		http.Error(w, utils.HttpResponseError(err), http.StatusInternalServerError)
+		return
+	}
+
+	// let hide the password
+	userOut := dtos.ToUserResponseDto(user)
+
+	response := map[string]interface{}{
+		"user": userOut,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusFound)
