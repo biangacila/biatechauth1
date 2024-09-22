@@ -48,6 +48,7 @@ func main() {
 
 	// Initialize stores
 	store.InitTokens()
+	store.InitialOtpStore()
 
 	// Initialize google authentication
 	go authproviders.NewGoogleAuth()

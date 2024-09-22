@@ -14,16 +14,18 @@ type ControllerRepository struct {
 }
 
 type ControllerServices struct {
-	User    *services.UserServiceImpl
-	Login   *services.LoginServiceImpl
-	Generic *services.GenericServiceImpl[any]
+	User           *services.UserServiceImpl
+	Login          *services.LoginServiceImpl
+	Generic        *services.GenericServiceImpl[any]
+	ForgetPassword *services.ForgetPasswordServiceImpl
 }
 
 type ControllerHandlers struct {
-	userController        controllers.UserController
-	loginController       controllers.LoginController
-	genericController     controllers.GenericController[any]
-	loginGoogleController controllers.AuthGoogleController
+	userController           controllers.UserController
+	loginController          controllers.LoginController
+	genericController        controllers.GenericController[any]
+	loginGoogleController    controllers.AuthGoogleController
+	forgetPasswordController controllers.ForgetPasswordController
 }
 
 func NewControllerRepositoryWithCassandra() ControllerRepository {
@@ -66,6 +68,7 @@ func (b *Builders) BuildService() ControllerServices {
 	b.services.User = services.NewUserServiceImpl(b.repositories.repoUser)
 	b.services.Login = services.NewLoginServiceImpl(b.repositories.repoLogin, b.repositories.repoUser)
 	b.services.Generic = services.NewGenericServiceImpl(b.repositories.repoGeneric)
+	b.services.ForgetPassword = services.NewForgetPasswordServiceImpl(b.repositories.repoUser)
 
 	return b.services
 }
@@ -87,6 +90,7 @@ func (b *Builders) Build() ControllerHandlers {
 	h.loginController = controllers.NewLoginController(b.services.Login)
 	h.genericController = controllers.NewGenericController(b.services.Generic)
 	h.loginGoogleController = controllers.NewAuthGoogleController(b.services.Login)
+	h.forgetPasswordController = controllers.NewForgetPasswordController(b.services.ForgetPassword)
 
 	b.handlers = h
 	return b.handlers

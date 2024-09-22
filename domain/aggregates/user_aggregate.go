@@ -67,3 +67,13 @@ func (c *UserAggregate) NewUser(email, name, surname, phone, password, id, provi
 	}
 	return user, nil
 }
+func (c *UserAggregate) HashPassword(password string) (newPassword string, err error) {
+	if err = valueobjects.ValidPasswordPolicy(password); err != nil {
+		return "", err
+	}
+	password, err = valueobjects.NewPassword(password)
+	if err != nil {
+		return "", err
+	}
+	return valueobjects.HashPassword(password)
+}

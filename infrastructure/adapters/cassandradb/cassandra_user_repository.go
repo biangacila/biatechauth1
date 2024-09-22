@@ -29,6 +29,11 @@ func (c *CassandraUserRepository) Lock(code string) error {
 		constants.DbName, code)
 	return c.session.Query(query, time.Now()).Exec()
 }
+func (c *CassandraUserRepository) ResetPassword(email, password string) error {
+	query := fmt.Sprintf("UPDATE %v.users SET password='%v',UpdatedAt=? WHERE   email='%v'",
+		constants.DbName, password, email)
+	return c.session.Query(query, time.Now()).Exec()
+}
 
 // UnLock unlocks a user account by updating the status and logger info
 func (c *CassandraUserRepository) UnLock(code string) error {
