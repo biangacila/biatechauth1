@@ -12,7 +12,7 @@ func NewCommunicationEmailService() *CommunicationEmailService {
 func (c CommunicationEmailService) SendOpt(emailAddress, name, otp, systemName string) error {
 
 	var subject = fmt.Sprintf("%v One-Time Password", systemName)
-	var senderName = fmt.Sprintf("%v Health Service Authentication", systemName)
+	var senderName = fmt.Sprintf("%v Service Authentication", systemName)
 	var org = systemName
 	var body = fmt.Sprintf(` 
 		<h2>Hello %v</h2>

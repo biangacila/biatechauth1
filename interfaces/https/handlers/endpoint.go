@@ -16,4 +16,11 @@ func (r *Endpoint) RegisterRoutes() {
 	router.HandleFunc(prefix+"/logins-google/login", r.loginWithGoogleController.Login).Methods("GET")
 	router.HandleFunc(prefix+"/logins-google/callback", r.loginWithGoogleController.Callback).Methods("GET")
 
+	router.HandleFunc(prefix+"/forget-password/send", r.forgetPassword.SendOpt).Methods("POST")
+	router.HandleFunc(prefix+"/forget-password/send/{email}/{system_name}", r.forgetPassword.SendOpt).Methods("GET")
+	router.HandleFunc(prefix+"/forget-password/verify", r.forgetPassword.VerifyOpt).Methods("POST")
+	router.HandleFunc(prefix+"/forget-password/verify/{email}/{opt}", r.forgetPassword.VerifyOpt).Methods("GET")
+	router.HandleFunc(prefix+"/forget-password/reset", r.forgetPassword.ResetPassword).Methods("POST")
+	router.HandleFunc(prefix+"/forget-password/reset/{email}/{opt}/{password}", r.forgetPassword.ResetPassword).Methods("GET")
+
 }

@@ -11,6 +11,7 @@ type Endpoint struct {
 	loginController           controllers.LoginController
 	genericController         controllers.GenericController[any]
 	loginWithGoogleController controllers.AuthGoogleController
+	forgetPassword            controllers.ForgetPasswordController
 }
 
 func NewEndpoint(router *mux.Router, serv *ControllerHandlers) *Endpoint {
@@ -20,6 +21,7 @@ func NewEndpoint(router *mux.Router, serv *ControllerHandlers) *Endpoint {
 		loginController:           serv.loginController,
 		genericController:         serv.genericController,
 		loginWithGoogleController: serv.loginGoogleController,
+		forgetPassword:            serv.forgetPasswordController,
 	}
 }
 

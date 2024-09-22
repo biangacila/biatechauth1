@@ -3,6 +3,7 @@ package store
 import (
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"github.com/biangacila/biatechauth1/internal/utils"
 	"sync"
 	"time"
@@ -28,7 +29,7 @@ func NewOtpStore() *ServeOtp {
 }
 
 func InitialOtpStore() {
-	if storeOtp.list == nil {
+	if storeOtp == nil {
 		storeOtp = NewOtpStore()
 	}
 }
@@ -42,7 +43,8 @@ func (s *ServeOtp) Get(otp string) (Otp, error) {
 	if !ok {
 		return Otp{}, errors.New("otp not found")
 	}
-	if o.ExpiredAt.After(time.Now()) {
+	if time.Now().After(o.ExpiredAt) {
+		fmt.Println("###### ", o.ExpiredAt.String(), " > ", time.Now().String())
 		delete(s.list, otp)
 		return Otp{}, errors.New("otp expired")
 	}
@@ -54,10 +56,14 @@ func (s *ServeOtp) Remove(otp string) error {
 	delete(s.list, otp)
 	return nil
 }
-func (s *ServeOtp) Set(otp Otp) error {
+func (s *ServeOtp) Set(email, value string) error {
 	s.Lock()
 	defer s.Unlock()
-	otp.ExpiredAt = utils.GetExpiredAt(2)
+	otp := Otp{
+		Value:     value,
+		Email:     email,
+		ExpiredAt: utils.GetExpiredAt(2),
+	}
 	s.list[otp.Value] = otp
 	return nil
 }

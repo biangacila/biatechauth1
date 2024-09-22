@@ -30,7 +30,7 @@ func (c *CassandraUserRepository) Lock(code string) error {
 	return c.session.Query(query, time.Now()).Exec()
 }
 func (c *CassandraUserRepository) ResetPassword(email, password string) error {
-	query := fmt.Sprintf("UPDATE %v.users SET password='%v',UpdatedAt=? WHERE  AND email='%v'",
+	query := fmt.Sprintf("UPDATE %v.users SET password='%v',UpdatedAt=? WHERE   email='%v'",
 		constants.DbName, password, email)
 	return c.session.Query(query, time.Now()).Exec()
 }

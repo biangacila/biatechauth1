@@ -6,7 +6,6 @@ import (
 	"github.com/biangacila/biatechauth1/infrastructure/adapters/communitions"
 	"github.com/biangacila/biatechauth1/internal/utils"
 	"github.com/biangacila/biatechauth1/store"
-	"time"
 )
 
 type ForgetPasswordServiceImpl struct {
@@ -16,9 +15,9 @@ type ForgetPasswordServiceImpl struct {
 
 func NewForgetPasswordServiceImpl(repoUser repositories.UserRepository) *ForgetPasswordServiceImpl {
 	var userService = NewUserServiceImpl(repoUser)
-	var emailService = communitions.NewCommunicationEmailService()
+	var emailService = communitions.NewCommunicationEmailService() // make sure this implements EmailService
 	return &ForgetPasswordServiceImpl{
-		EmailService: emailService,
+		EmailService: emailService, // properly initialize EmailService
 		serviceUser:  userService,
 	}
 }
@@ -41,6 +40,11 @@ func (f ForgetPasswordServiceImpl) SendOtp(email, systemName string) error {
 		return err
 	}
 
+	err = store.GetStoreOtp().Set(email, otp)
+	if err != nil {
+		return err
+	}
+
 	err = f.EmailService.SendOpt(email, user.String(), otp, systemName)
 	if err != nil {
 		utils.NewLoggerSlog().Error(err.Error())
@@ -48,7 +52,6 @@ func (f ForgetPasswordServiceImpl) SendOtp(email, systemName string) error {
 	}
 	return nil
 }
-
 func (f ForgetPasswordServiceImpl) VerifyOtp(email, opt string) error {
 	o, err := store.GetStoreOtp().Get(opt)
 	if err != nil {
@@ -59,22 +62,20 @@ func (f ForgetPasswordServiceImpl) VerifyOtp(email, opt string) error {
 	}
 	return nil
 }
-
 func (f ForgetPasswordServiceImpl) ResetPassword(email, opt, password string) error {
 	if err := f.VerifyOtp(email, opt); err != nil {
 		return err
 	}
-	return f.serviceUser.ResetPassword(email, password)
+	if err := f.serviceUser.ResetPassword(email, password); err != nil {
+		return err
+	}
+	return store.GetStoreOtp().Remove(opt)
+
 }
 func (f ForgetPasswordServiceImpl) GenerateOpt() (string, error) {
-	var otp string
-	var hub = store.GetStoreOtp()
-	for {
-		otp = hub.Generate()
-		if !hub.InStore(otp) {
-			break
-		}
-		<-time.After(2 * time.Second)
+	otp := store.GetStoreOtp().Generate()
+	if !store.GetStoreOtp().InStore(otp) {
+		return otp, nil
 	}
-	return otp, nil
+	return "", errors.New("failed to generate unique OTP")
 }
