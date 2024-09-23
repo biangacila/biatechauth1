@@ -14,6 +14,7 @@ import (
 	"github.com/markbates/goth/providers/google"
 	"golang.org/x/oauth2"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -120,14 +121,17 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 	global.DisplayObject("cookieId", cookieId)
 	global.DisplayObject("utils.MapToString(userInfo)", utils.MapToString(userInfo))
 	sessionID := cookieId.Value
-	sessionUri := cookieId.Path
+	sessionUri := extractValueFromQueryString(sessionID, "redirect_uri")
 	extraUriFromUserInfo, _ := userInfo["redirect_uri"]
 
 	fmt.Println("): sessionUri> ", sessionUri, " > ", sessionUri, " > ", extraUriFromUserInfo)
 
 	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_info=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
 	fmt.Println("): uriRed> ", uriRed)
-
+	/*if rUrl := extractValueFromQueryString(sessionID, "redirect_uri"); rUrl != "" {
+		uriRed = fmt.Sprintf("%v%v", rUrl, uriRed)
+	}
+	fmt.Println("2): uriRed> ", uriRed)*/
 	http.Redirect(w, r, uriRed, http.StatusFound)
 	return
 }
@@ -138,4 +142,30 @@ func generateSessionID() (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func extractValueFromQueryString(input, key string) string {
+	var value string
+	// Split the query string
+	if strings.Contains(input, "?") {
+		// Extract the query string portion after '?'
+		queryString := strings.Split(input, "?")[1]
+
+		// Parse the query string into values
+		params, err := url.ParseQuery(queryString)
+		if err != nil {
+			fmt.Println("Error parsing query string:", err)
+			return value
+		}
+
+		// Extract the 'redirect_uri' value
+		redirectURI := params.Get("redirect_uri")
+		if redirectURI != "" {
+			fmt.Println("Redirect URI:", redirectURI)
+			value = redirectURI
+		} else {
+			fmt.Println("Redirect URI not found")
+		}
+	}
+	return value
 }
