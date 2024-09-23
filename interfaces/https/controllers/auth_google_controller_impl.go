@@ -103,7 +103,6 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 	json.NewDecoder(resp.Body).Decode(&userInfo)
 	//todo just to test again
 	global.DisplayObject("1. ):( userInfo resp", userInfo)
-	global.DisplayObject("2. ):( userInfo resp", uInfo)
 
 	if sessionStore == nil {
 		sessionStore = make(map[string]*sessionData)
