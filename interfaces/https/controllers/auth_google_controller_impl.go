@@ -102,8 +102,6 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 	userInfo := make(map[string]interface{})
 	json.NewDecoder(resp.Body).Decode(&userInfo)
 	//todo just to test again
-	uInfo := dtos.UserDto{}
-	json.NewDecoder(resp.Body).Decode(&uInfo)
 	global.DisplayObject("1. ):( userInfo resp", userInfo)
 	global.DisplayObject("2. ):( userInfo resp", uInfo)
 
@@ -119,14 +117,17 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Retrieve the session ID from the cookie
-	cookie, err := r.Cookie("session_id")
+	cookieId, err := r.Cookie("session_id")
 	if err != nil {
 		http.Error(w, "Session ID not found", http.StatusUnauthorized)
 		return
 	}
-	sessionID := cookie.Value
+	sessionID := cookieId.Value
 
-	cookieUri, _ := r.Cookie("session_uri")
+	cookieUri, err := r.Cookie("session_uri")
+	if err != nil {
+		http.Error(w, "Session URI not found", http.StatusUnauthorized)
+	}
 	sessionUri := cookieUri.Value
 	fmt.Println("): sessionUri> ", sessionUri)
 
