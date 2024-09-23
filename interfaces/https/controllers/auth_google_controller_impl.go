@@ -65,11 +65,7 @@ func (c *AuthGoogleControllerImpl) Login(w http.ResponseWriter, r *http.Request)
 		Value: sessionId,
 		Path:  hostRedirectUri,
 	})
-	http.SetCookie(w, &http.Cookie{
-		Name:  "session_uri",
-		Value: hostRedirectUri,
-		Path:  hostRedirectUri,
-	})
+
 	redirectUri := utils.GoogleAuthCallbackUri()
 	if strings.Contains(host, "localhost") {
 		// TODO please uncomment
@@ -122,13 +118,9 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	sessionID := cookieId.Value
-
-	cookieUri, err := r.Cookie("session_uri")
-	if err != nil {
-		http.Error(w, "Session URI not found", http.StatusUnauthorized)
-	}
-	sessionUri := cookieUri.Value
-	fmt.Println("): sessionUri> ", sessionUri)
+	sessionUri := cookieId.Path
+	extraUriFromUserInfo, _ := userInfo["redirect_uri"].(string)
+	fmt.Println("): sessionUri> ", sessionUri, " > ", sessionUri, " > ", extraUriFromUserInfo)
 
 	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_info=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
 	fmt.Println("): uriRed> ", uriRed)
