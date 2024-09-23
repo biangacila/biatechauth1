@@ -128,48 +128,15 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 
 	cookieUri, _ := r.Cookie("session_uri")
 	sessionUri := cookieUri.Value
+	fmt.Println("): sessionUri> ", sessionUri)
 
-	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
+	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_info=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
+	fmt.Println("): uriRed> ", uriRed)
+
 	http.Redirect(w, r, uriRed, http.StatusFound)
 	return
 }
 
-/*
-	func (c *AuthGoogleControllerImpl) CallbackGothic(w http.ResponseWriter, r *http.Request) {
-		user, err := gothic.CompleteUserAuth(w, r)
-		if err != nil {
-			http.Error(w, "Failed to complete user authentication", http.StatusInternalServerError)
-			return
-		}
-
-		// Use the user info and token from Goth
-		fmt.Println("User: ", user)
-
-		// Store user info in session if needed
-		err = c.autService.RegisterToken(user.UserID, &oauth2.Token{
-			AccessToken: user.AccessToken,
-		}, "google", map[string]interface{}{
-			"name":  user.Name,
-			"email": user.Email,
-		})
-		if err != nil {
-			fmt.Println("!> error > ", err)
-			return
-		}
-
-		// Store with our location token register
-		userCode := c.service.RegisterGoogleToken(user., utils.ObjectToMap(user))
-
-		// Redirect or process the user data
-		cookie, err := r.Cookie("session_id")
-		sessionID := cookie.Value
-		cookieUri, _ := r.Cookie("session_uri")
-		sessionUri := cookieUri.Value
-		uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_code=%v", sessionUri, user.AccessToken, sessionID, userCode)
-
-		http.Redirect(w, r, uriRed, http.StatusFound)
-	}
-*/
 func generateSessionID() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
