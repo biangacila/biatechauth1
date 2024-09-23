@@ -117,9 +117,12 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Session ID not found", http.StatusUnauthorized)
 		return
 	}
+	global.DisplayObject("cookieId", cookieId)
+	global.DisplayObject("utils.MapToString(userInfo)", utils.MapToString(userInfo))
 	sessionID := cookieId.Value
 	sessionUri := cookieId.Path
-	extraUriFromUserInfo, _ := userInfo["redirect_uri"].(string)
+	extraUriFromUserInfo, _ := userInfo["redirect_uri"]
+
 	fmt.Println("): sessionUri> ", sessionUri, " > ", sessionUri, " > ", extraUriFromUserInfo)
 
 	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_info=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
