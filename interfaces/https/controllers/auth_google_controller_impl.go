@@ -53,7 +53,7 @@ func (c *AuthGoogleControllerImpl) LoginWithGoogle(w http.ResponseWriter, r *htt
 }
 
 func (c *AuthGoogleControllerImpl) Login(w http.ResponseWriter, r *http.Request) {
-	host := r.Host
+	//host := r.Host
 	hostRedirectUri := r.URL.Query().Get("redirect_uri")
 	sessionId := r.URL.Query().Get("session_id") // todo get it from the client request
 	if sessionId == "" {
