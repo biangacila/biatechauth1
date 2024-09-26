@@ -67,12 +67,12 @@ func (c *AuthGoogleControllerImpl) Login(w http.ResponseWriter, r *http.Request)
 	})
 
 	redirectUri := utils.GoogleAuthCallbackUri()
-	if strings.Contains(host, "localhost") {
+	/*if strings.Contains(host, "localhost") {
 		// TODO please uncomment
 		redirectUri = fmt.Sprintf("http://%v/backend-biatechauth1/api/logins-google/callback", host)
 	} else if utils.ContainsIPAddress(host) {
 		redirectUri = fmt.Sprintf("http://localhost:8080/backend-biatechauth1/api/logins-google/callback")
-	}
+	}*/
 	googleOauthConfig.RedirectURL = redirectUri
 	url := googleOauthConfig.AuthCodeURL("random_state")
 
