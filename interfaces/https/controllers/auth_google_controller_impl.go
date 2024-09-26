@@ -8,6 +8,7 @@ import (
 	"github.com/biangacila/biatechauth1/application/dtos"
 	"github.com/biangacila/biatechauth1/application/services"
 	"github.com/biangacila/biatechauth1/internal/utils"
+	"github.com/biangacila/luvungula-go/global"
 	"github.com/google/uuid"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
@@ -65,6 +66,11 @@ func (c *AuthGoogleControllerImpl) Login(w http.ResponseWriter, r *http.Request)
 		Value: sessionId,
 		Path:  hostRedirectUri,
 	})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "session_uri",
+		Value: hostRedirectUri,
+		Path:  hostRedirectUri,
+	})
 
 	redirectUri := utils.GoogleAuthCallbackUri()
 	/*if strings.Contains(host, "localhost") {
@@ -117,6 +123,9 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 	}
 	sessionID := cookieId.Value
 	sessionUri := extractValueFromQueryString(sessionID, "redirect_uri")
+	global.DisplayObject("cookieId", cookieId)
+
+	fmt.Println("sessionId>>>>", sessionID, " >>>>  ", sessionUri)
 
 	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_info=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
 
