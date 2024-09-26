@@ -8,7 +8,6 @@ import (
 	"github.com/biangacila/biatechauth1/application/dtos"
 	"github.com/biangacila/biatechauth1/application/services"
 	"github.com/biangacila/biatechauth1/internal/utils"
-	"github.com/biangacila/luvungula-go/global"
 	"github.com/google/uuid"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
@@ -98,8 +97,6 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 	defer resp.Body.Close()
 	userInfo := make(map[string]interface{})
 	json.NewDecoder(resp.Body).Decode(&userInfo)
-	//todo just to test again
-	global.DisplayObject("1. ):( userInfo resp", userInfo)
 
 	if sessionStore == nil {
 		sessionStore = make(map[string]*sessionData)
@@ -118,20 +115,11 @@ func (c *AuthGoogleControllerImpl) Callback(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Session ID not found", http.StatusUnauthorized)
 		return
 	}
-	global.DisplayObject("cookieId", cookieId)
-	global.DisplayObject("utils.MapToString(userInfo)", utils.MapToString(userInfo))
 	sessionID := cookieId.Value
 	sessionUri := extractValueFromQueryString(sessionID, "redirect_uri")
-	extraUriFromUserInfo, _ := userInfo["redirect_uri"]
-
-	fmt.Println("): sessionUri> ", sessionUri, " > ", sessionUri, " > ", extraUriFromUserInfo)
 
 	uriRed := fmt.Sprintf("%v?token=%v&session_id=%v&user_info=%v", sessionUri, token.AccessToken, sessionID, utils.MapToString(userInfo))
-	fmt.Println("): uriRed> ", uriRed)
-	/*if rUrl := extractValueFromQueryString(sessionID, "redirect_uri"); rUrl != "" {
-		uriRed = fmt.Sprintf("%v%v", rUrl, uriRed)
-	}
-	fmt.Println("2): uriRed> ", uriRed)*/
+
 	http.Redirect(w, r, uriRed, http.StatusFound)
 	return
 }
