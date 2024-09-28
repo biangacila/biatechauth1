@@ -21,11 +21,12 @@ type ControllerServices struct {
 }
 
 type ControllerHandlers struct {
-	userController           controllers.UserController
-	loginController          controllers.LoginController
-	genericController        controllers.GenericController[any]
-	loginGoogleController    controllers.AuthGoogleController
-	forgetPasswordController controllers.ForgetPasswordController
+	userController             controllers.UserController
+	loginController            controllers.LoginController
+	genericController          controllers.GenericController[any]
+	loginGoogleController      controllers.AuthGoogleController
+	forgetPasswordController   controllers.ForgetPasswordController
+	bankNotificationController controllers.BankNotificationController
 }
 
 func NewControllerRepositoryWithCassandra() ControllerRepository {
@@ -91,6 +92,7 @@ func (b *Builders) Build() ControllerHandlers {
 	h.genericController = controllers.NewGenericController(b.services.Generic)
 	h.loginGoogleController = controllers.NewAuthGoogleController(b.services.Login)
 	h.forgetPasswordController = controllers.NewForgetPasswordController(b.services.ForgetPassword)
+	h.bankNotificationController = controllers.NewBankNotificationControllerImpl()
 
 	b.handlers = h
 	return b.handlers

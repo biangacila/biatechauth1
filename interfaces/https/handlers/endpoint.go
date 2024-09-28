@@ -23,4 +23,6 @@ func (r *Endpoint) RegisterRoutes() {
 	router.HandleFunc(prefix+"/forget-password/reset", r.forgetPassword.ResetPassword).Methods("POST")
 	router.HandleFunc(prefix+"/forget-password/reset/{email}/{opt}/{password}", r.forgetPassword.ResetPassword).Methods("GET")
 
+	router.HandleFunc(prefix+"/bank-notification/fnb", r.bankNotificationController.ReceiveNotificationPost).Methods("POST")
+
 }
