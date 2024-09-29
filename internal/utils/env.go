@@ -51,6 +51,7 @@ func GetAllowedOrigins() []string {
 	}
 	return []string{
 		"http://localhost:*",
+		"http://localhost:5173",
 		"https://cloudcalls.easipath.com",
 	}
 }
