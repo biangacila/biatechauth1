@@ -53,6 +53,7 @@ func GetAllowedOrigins() []string {
 		"http://localhost:*",
 		"http://localhost:5173",
 		"https://cloudcalls.easipath.com",
+		"https://scrutinize.biacibenga.com",
 	}
 }
 func GetAllowedHeaders() []string {
